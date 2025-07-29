@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Foreign Language Typing Trainer</title>
   <style>
+    
     body {
       font-family: "Segoe UI", sans-serif;
       padding: 2rem;
@@ -158,6 +159,32 @@
       animation: slam 0.1s ease forwards;
       display: inline-block; /* Needed for transform animations */
     }
+    @media (max-width: 600px) {
+  body {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .word-block {
+    font-size: 1.4rem;
+  }
+
+  .input-field {
+    font-size: 1.2rem;
+    padding: 0.5rem;
+  }
+
+  button {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.8rem;
+  }
+}
+.input-field {
+  min-height: 2.5rem;
+  cursor: text;
+}
+
   </style>
 </head>
 <body>
@@ -167,7 +194,9 @@
 
   <div class="score-display" id="score-display"></div>
 
-  <div class="input-field" id="input-field" contenteditable="true" spellcheck="false"></div>
+  <div class="input-field" id="input-display"></div>
+<input id="hidden-input" type="text" inputmode="latin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="position: absolute; opacity: 0; height: 0;" />
+
   <div class="status" id="status-message"></div>
   <div id="progress-bar" style="height: 6px; background: #ddd;">
     <div id="progress-fill" style="height: 100%; width: 0; background: #4caf50;"></div>
@@ -203,6 +232,10 @@
     const statusMessage = document.getElementById("status-message");
     const progressBar = document.getElementById("progress-fill");
     const restartButton = document.getElementById("restart-button");
+
+    const inputDisplay = document.getElementById("input-display");
+    const hiddenInput = document.getElementById("hidden-input");
+
 
     function renderAllWords() {
       streamWrapper.innerHTML = "";
@@ -332,7 +365,8 @@
       renderInput();
       highlightCurrentLetter();
 
-      inputField.focus();
+      hiddenInput.focus();
+
       statusMessage.textContent = `Word ${index + 1} of ${foreignWords.length}`;
       progressBar.style.width = `${(currentWordIndex / foreignWords.length) * 100}%`;
 
@@ -362,62 +396,56 @@
       scoreDisplay.textContent = `Correct: ${totalCorrect} | Mistakes: ${totalMistakes} | Accuracy: ${accuracy}%`;
     }
 
-    inputField.addEventListener("keydown", (e) => {
-      const wordData = foreignWords[currentWordIndex];
-      const currentPhoneme = wordData.phonetic[currentLetterIndex];
+    hiddenInput.addEventListener("input", (e) => {
+  const inputChar = e.target.value.toLowerCase();
+  e.target.value = ""; // clear after each keystroke
 
-      if (e.key === "Enter") {
-        e.preventDefault();
-        return;
-      }
+  if (!/^[a-z]$/.test(inputChar)) return;
 
-      if (e.key === "Backspace") {
-        if (currentInputBuffer.length > 0) {
-          currentInputBuffer = currentInputBuffer.slice(0, -1);
-        } else if (inputHistory.length > 0) {
-          const last = inputHistory.pop();
-          if (last.status === "correct") {
-            currentLetterIndex--;
-            highlightCurrentLetter();
-            if (last.scored) {
-              totalCorrect--;
-            }
-            updateScoreDisplay();
-          }
+  const wordData = foreignWords[currentWordIndex];
+  const currentPhoneme = wordData.phonetic[currentLetterIndex];
+
+  currentInputBuffer += inputChar;
+
+  if (currentPhoneme === currentInputBuffer) {
+    inputHistory.push({ char: currentInputBuffer, status: "correct", scored: true });
+    totalCorrect++;
+    currentLetterIndex++;
+    currentInputBuffer = "";
+    highlightCurrentLetter();
+
+    if (currentLetterIndex === wordData.phonetic.length) {
+      setTimeout(() => advanceToNextWord(), 0);
+    }
+  } else if (!currentPhoneme.startsWith(currentInputBuffer)) {
+    inputHistory.push({ char: currentInputBuffer, status: "wrong" });
+    totalMistakes++;
+    currentInputBuffer = "";
+  }
+
+  renderInput();
+  updateScoreDisplay();
+});
+
+hiddenInput.addEventListener("keydown", (e) => {
+  if (e.key === "Backspace") {
+    if (currentInputBuffer.length > 0) {
+      currentInputBuffer = currentInputBuffer.slice(0, -1);
+    } else if (inputHistory.length > 0) {
+      const last = inputHistory.pop();
+      if (last.status === "correct") {
+        currentLetterIndex--;
+        highlightCurrentLetter();
+        if (last.scored) {
+          totalCorrect--;
         }
-        renderInput();
-
-        e.preventDefault();
-        return;
+        updateScoreDisplay();
       }
-
-      if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
-        currentInputBuffer += e.key.toLowerCase();
-
-        if (currentPhoneme === currentInputBuffer) {
-          // ✅ exact match
-          inputHistory.push({ char: currentInputBuffer, status: "correct", scored: true });
-          totalCorrect++;
-          currentLetterIndex++;
-          currentInputBuffer = "";
-          highlightCurrentLetter();
-
-          if (currentLetterIndex === wordData.phonetic.length) {
-            setTimeout(() => advanceToNextWord(), 0);
-          }
-        } else if (!currentPhoneme.startsWith(currentInputBuffer)) {
-          // ❌ not even a prefix
-          inputHistory.push({ char: currentInputBuffer, status: "wrong" });
-          totalMistakes++;
-          currentInputBuffer = "";
-        }
-
-        renderInput();
-        e.preventDefault();
-      }
-
-      updateScoreDisplay();
-    });
+    }
+    renderInput();
+    e.preventDefault();
+  }
+});
 
     restartButton.addEventListener("click", () => {
       totalCorrect = 0;
@@ -432,6 +460,8 @@
       inputField.setAttribute("contenteditable", "true");
       updateScoreDisplay();
     });
+    inputDisplay.addEventListener("click", () => hiddenInput.focus());
+
 
     // Init
     renderAllWords();

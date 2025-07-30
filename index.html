@@ -125,23 +125,55 @@
       display: inline-block;
     }
     /* Virtual keyboard styling */
-    #virtual-keyboard {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      justify-content: center;
-      margin-bottom: 1rem;
-      user-select: none;
-    }
-    #virtual-keyboard button {
-      flex: 0 0 2.8rem;
-      height: 2.8rem;
-      font-size: 1.1rem;
-      padding: 0;
-    }
-    #virtual-keyboard button.wide {
-      flex: 0 0 5.8rem;
-    }
+#virtual-keyboard {
+  user-select: none;
+  margin-bottom: 1rem;
+  display: inline-block;
+  text-align: center;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#virtual-keyboard > div {
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+#virtual-keyboard button {
+  background-color: #eee; /* lighter gray */
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  color: #444;
+  font-weight: 600;
+  font-size: 1.2rem;
+  flex: 0 0 3.6rem;
+  height: 3.6rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#virtual-keyboard button:hover {
+  background-color: #d6d6d6;
+  color: #222;
+}
+
+#virtual-keyboard button:active {
+  background-color: #bbb;
+  color: #111;
+}
+
+#virtual-keyboard button.wide {
+  flex: 0 0 7.2rem; /* twice the width */
+}
+
+
   </style>
 </head>
 <body>
@@ -196,23 +228,32 @@
 
     // Create the virtual keyboard keys a-z + Backspace
     function createVirtualKeyboard() {
-      const keys = [];
-      for (let i = 0; i < 26; i++) {
-        keys.push(String.fromCharCode(97 + i)); // a-z
-      }
-      keys.push("Backspace");
+      // QWERTY layout rows
+      const rows = [
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l'],
+        ['z','x','c','v','b','n','m','Backspace']
+      ];
 
       virtualKeyboard.innerHTML = "";
 
-      keys.forEach(key => {
-        const btn = document.createElement("button");
-        btn.textContent = key === "Backspace" ? "⌫" : key;
-        btn.setAttribute("data-key", key);
-        btn.type = "button";
-        if (key === "Backspace") btn.classList.add("wide");
-        virtualKeyboard.appendChild(btn);
+      rows.forEach(row => {
+        const rowDiv = document.createElement("div");
+        rowDiv.style.display = "flex";
+        rowDiv.style.justifyContent = "center";
+        rowDiv.style.gap = "0.4rem";
+        row.forEach(key => {
+          const btn = document.createElement("button");
+          btn.textContent = key === "Backspace" ? "⌫" : key;
+          btn.setAttribute("data-key", key);
+          btn.type = "button";
+          if (key === "Backspace") btn.classList.add("wide");
+          rowDiv.appendChild(btn);
+        });
+        virtualKeyboard.appendChild(rowDiv);
       });
     }
+
 
     function renderAllWords() {
       streamWrapper.innerHTML = "";

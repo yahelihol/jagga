@@ -124,39 +124,59 @@
       animation: slam 0.3s ease forwards;
       display: inline-block;
     }
-    /* Virtual keyboard styling */
+    
+@media (max-width: 360px) {
+  #virtual-keyboard button {
+    font-size: 1rem;
+    flex: 0 0 2.6rem;
+    height: 2.6rem;
+    min-width: 2.6rem;
+  }
+
+  #virtual-keyboard button.wide {
+    flex: 0 0 4.8rem;
+    min-width: 4.8rem;
+  }
+}
+
+
 #virtual-keyboard {
   user-select: none;
-  margin-bottom: 1rem;
-  display: inline-block;
+  margin: 1rem auto 1.5rem auto;
+  max-width: 100vw;
+  padding: 0 0.3rem;
   text-align: center;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  box-sizing: border-box;
 }
 
 #virtual-keyboard > div {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
+  flex-wrap: nowrap; /* keep keys in a line */
+  overflow-x: auto;   /* allow horizontal scroll if needed */
+  -webkit-overflow-scrolling: touch;
 }
 
 #virtual-keyboard button {
-  background-color: #eee; /* lighter gray */
-  border: 1.5px solid #ccc;
-  border-radius: 8px;
+  background-color: #eee;
+  border: 1.2px solid #ccc;
+  border-radius: 7px;
   color: #444;
   font-weight: 600;
-  font-size: 1.2rem;
-  flex: 0 0 3.6rem;
-  height: 3.6rem;
+  font-size: 1.1rem;
+  flex: 0 0 3rem;
+  height: 3rem;
   cursor: pointer;
   user-select: none;
   transition: background-color 0.15s ease, color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
+  min-width: 3rem;
+  box-sizing: border-box;
 }
 
 #virtual-keyboard button:hover {
@@ -170,8 +190,10 @@
 }
 
 #virtual-keyboard button.wide {
-  flex: 0 0 7.2rem; /* twice the width */
+  flex: 0 0 5.5rem;
+  min-width: 5.5rem;
 }
+
 
 
   </style>
